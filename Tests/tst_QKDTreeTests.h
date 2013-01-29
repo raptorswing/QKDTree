@@ -17,6 +17,7 @@ private Q_SLOTS:
     void insertionTest();
     void containsTest();
     void bigNearestTest();
+    void nearestPosByPosTest();
 
     void benchmarkTreeAdd1();
     void benchmarkTreeAdd2();

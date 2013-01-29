@@ -58,12 +58,14 @@ void QKDTreeTests::containsTest()
 //private test
 void QKDTreeTests::bigNearestTest()
 {
+    const int dim = 4;
+    const int count = 5000;
     QList<QVectorND> backupList;
-    QKDTree tree(4);
+    QKDTree tree(dim);
 
-    for (int i = 0; i < 6000; i++)
+    for (int i = 0; i < count; i++)
     {
-        QVectorND pos = _randomNDimensional(4);
+        QVectorND pos = _randomNDimensional(dim);
 
         backupList.append(pos);
         QVERIFY(tree.add(pos, i));
@@ -72,16 +74,16 @@ void QKDTreeTests::bigNearestTest()
     QVERIFY(backupList.size() == tree.size());
 
     bool wasError = false;
-    for (int i = 0; i < 5000; i++)
+    for (int i = 0; i < count; i++)
     {
-        QVectorND pos = _randomNDimensional(4);
+        QVectorND pos = _randomNDimensional(dim);
 
         QKDTreeNode nearest;
         tree.nearest(pos, &nearest);
         qreal treeDistance = tree.distanceMetric()->distance(pos,nearest.position());
 
-        QVectorND backupNearest(4);
-        qreal backupDist = 500000;
+        QVectorND backupNearest(dim);
+        qreal backupDist = std::numeric_limits<qreal>::max();
         foreach(const QVectorND& vec, backupList)
         {
             qreal dist = tree.distanceMetric()->distance(vec, pos);
@@ -91,7 +93,7 @@ void QKDTreeTests::bigNearestTest()
                 backupDist = dist;
             }
         }
-        qreal listDistance = tree.distanceMetric()->distance(pos,nearest.position());
+        qreal listDistance = tree.distanceMetric()->distance(pos,backupNearest);
 
         if (nearest.position() != backupNearest && treeDistance != listDistance)
         {
@@ -102,10 +104,53 @@ void QKDTreeTests::bigNearestTest()
     }
 
     if (wasError)
-    {
-        //tree.debugPrint();
         QVERIFY(false);
+}
+
+void QKDTreeTests::nearestPosByPosTest()
+{
+    const int dim = 3;
+    const int count = 5000;
+    QList<QVectorND> refList;
+    QKDTree tree(dim);
+
+    for (int i = 0; i < count; i++)
+    {
+        const QVectorND pos = _randomNDimensional(dim);
+        refList.append(pos);
+        QVERIFY(tree.add(pos,i));
     }
+
+    bool wasError = false;
+    for (int i = 0; i < count; i++)
+    {
+        const QVectorND searchPoint = _randomNDimensional(dim);
+
+        QVectorND nearestByTree(dim);
+        QVERIFY(tree.nearest(searchPoint, &nearestByTree));
+        const qreal treeDist = tree.distanceMetric()->distance(nearestByTree, searchPoint);
+
+        QVectorND nearestByList(dim);
+        qreal bestDist = std::numeric_limits<qreal>::max();
+        foreach(const QVectorND& candidate, refList)
+        {
+            const qreal dist = tree.distanceMetric()->distance(candidate, searchPoint);
+            if (dist < bestDist)
+            {
+                bestDist = dist;
+                nearestByList = candidate;
+            }
+        }
+
+        if (bestDist != treeDist)
+        {
+            qDebug() << "Nearest to" << searchPoint << "by tree:" << nearestByTree << treeDist;
+            qDebug() << "Nearest to" << searchPoint << "by list:" << nearestByList << bestDist;
+        }
+    }
+
+    if (wasError)
+        QVERIFY(false);
 }
 
 //private test

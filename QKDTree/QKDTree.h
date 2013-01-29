@@ -37,6 +37,8 @@ public:
     bool nearest(const QVectorND& position, QKDTreeNode * output, QString * resultOut = 0);
     bool nearest(QKDTreeNode * node, QKDTreeNode * output, QString * resultOut = 0);
 
+    bool nearest(const QVectorND& position, QVectorND * output, QString * resultOut = 0);
+
     bool contains(const QVectorND& position);
     bool contains(QKDTreeNode * node);
 

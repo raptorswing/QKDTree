@@ -215,7 +215,7 @@ bool QKDTree::nearest(const QVectorND &searchPos, QKDTreeNode *output, QString *
             QVectorND temp = current->position();
             temp[divDim] = searchPos.val(divDim);
             const qreal hyperplaneDistance = this->distanceMetric()->distance(temp, current->position());
-            if (hyperplaneDistance*hyperplaneDistance > bestDistSoFar)
+            if (hyperplaneDistance > bestDistSoFar)
                 continue;
 
             //Search the other side of the dividing node
@@ -243,6 +243,24 @@ bool QKDTree::nearest(QKDTreeNode *node, QKDTreeNode *output, QString *resultOut
     }
 
     return this->nearest(node->position(), output, resultOut);
+}
+
+bool QKDTree::nearest(const QVectorND &position, QVectorND *output, QString *resultOut)
+{
+    if (output == 0)
+    {
+        if (resultOut)
+            *resultOut = ERR_STRING_BAD_OUTPTR;
+        return false;
+    }
+
+    QKDTreeNode nearestNode;
+    if (!this->nearest(position, &nearestNode, resultOut))
+        return false;
+
+    *output = nearestNode.position();
+
+    return true;
 }
 
 bool QKDTree::contains(const QVectorND &position)

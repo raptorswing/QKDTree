@@ -1,11 +1,19 @@
 QKDTree
 =======
 
-A ghetto C++/Qt based kd-tree implementation.
+A ghetto C++/Qt based kd-tree implemented iteratively (i.e. with no recursion.)
 
 The tree supports storing key/value pairs where the key is a k-dimensional position and the value is anything you can cram into a QVariant.
 
-Insertion (assuming a reasonably balanced tree) can be done in O(logn) time.
-Finding the nearest key/value to a key can also be done in O(logn) time (again, assuming reasonably balaned tree).
+Features:
+* Inserting key/value pairs. O(logn) time.
+* Finding nearest neighbor given a key or key/value pair. O(logn) time.
+* Querying whether or not the tree contains a key/value pair with a given key. O(logn) time.
 
-Tree does not currently support finding the k-nearest key/value pairs to a key but this would be a pretty easy feature to add.
+
+Tree does NOT currently support:
+* Finding the k nearest neighbors to a key. This would be pretty easy to add.
+* Finding all key/values within distance d of a key. This would not be too hard to add.
+* Removing keys/values. This would be obnoxious to implement.
+* Iterating through all keys/values/pairs. This would be pretty easy to support though.
+* (Surprisingly) retrieving a value given a key.  

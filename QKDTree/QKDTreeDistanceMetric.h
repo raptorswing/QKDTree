@@ -3,11 +3,13 @@
 
 #include "QKDTreeNode.h"
 
+#include "QKDTree_global.h"
+
 /**
  * @brief The QKDTreeDistanceMetric class is used by QKDTree to calculate distances between positions.
  * This base implementation returns squared euclidean distance.
  */
-class QKDTreeDistanceMetric
+class QKDTREESHARED_EXPORT QKDTreeDistanceMetric
 {
 public:
     QKDTreeDistanceMetric();

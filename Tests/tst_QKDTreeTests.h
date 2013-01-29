@@ -4,6 +4,8 @@
 #include <QString>
 #include <QtTest>
 
+#include "QVectorND.h"
+
 class QKDTreeTests : public QObject
 {
     Q_OBJECT
@@ -13,6 +15,7 @@ public:
 
 private Q_SLOTS:
     void insertionTest();
+    void containsTest();
     void bigNearestTest();
 
     void benchmarkTreeAdd1();
@@ -26,6 +29,8 @@ private Q_SLOTS:
 
     void benchmarkListNearest1();
     void benchmarkListNearest2();
+
+    static QVectorND _randomNDimensional(int n);
 };
 
 #endif // TST_QKDTREETESTS_H

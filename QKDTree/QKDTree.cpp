@@ -133,7 +133,7 @@ bool QKDTree::add(const QPointF &position, const QVariant &value, QString *resul
 }
 
 
-bool QKDTree::nearest(const QVectorND &position, QKDTreeNode *output, QString *resultOut)
+bool QKDTree::nearest(const QVectorND &searchPos, QKDTreeNode *output, QString *resultOut)
 {
     if (output == 0)
     {
@@ -141,7 +141,7 @@ bool QKDTree::nearest(const QVectorND &position, QKDTreeNode *output, QString *r
             *resultOut = ERR_STRING_BAD_OUTPTR;
         return false;
     }
-    else if (position.dimension() != this->dimension())
+    else if (searchPos.dimension() != this->dimension())
     {
         if (resultOut)
             *resultOut = ERR_STRING_BAD_DIM;
@@ -167,22 +167,20 @@ bool QKDTree::nearest(const QVectorND &position, QKDTreeNode *output, QString *r
         if (!descend.isEmpty())
         {
             QKDTreeNode * current = descend.dequeue();
-            //qDebug() << "Descend" << current->position();
             unwindChecks.push(current);
 
-            int divDim = current->dividingDimension();
-            if (position.val(divDim) <= current->position().val(divDim))
+            const int divDim = current->dividingDimension();
+            if (searchPos.val(divDim) <= current->position().val(divDim))
             {
                 if (current->left() != 0)
                     descend.enqueue(current->left());
                 else
                 {
-                    const qreal dist = _distanceMetric->distance(current->position(), position);
+                    const qreal dist = _distanceMetric->distance(current->position(), searchPos);
                     if (dist < bestDistSoFar)
                     {
                         bestSoFar = current;
                         bestDistSoFar = dist;
-                        //qDebug() << "Best on left" << current->position() << bestDistSoFar;
                     }
                 }
             }
@@ -192,38 +190,36 @@ bool QKDTree::nearest(const QVectorND &position, QKDTreeNode *output, QString *r
                     descend.enqueue(current->right());
                 else
                 {
-                    const qreal dist = _distanceMetric->distance(current->position(), position);
+                    const qreal dist = _distanceMetric->distance(current->position(), searchPos);
                     if (dist < bestDistSoFar)
                     {
                         bestSoFar = current;
                         bestDistSoFar = dist;
-                        //qDebug() << "Best on right" << current->position() << bestDistSoFar;
                     }
                 }
             }
         }
         else
         {
+            //In this branch we "unwind" up the tree, checking those nodes for nearer-ness
             QKDTreeNode * current = unwindChecks.pop();
-            //qDebug() << "Unwind" << current->position();
             const int divDim = current->dividingDimension();
-            const qreal dist = _distanceMetric->distance(current->position(), position);
+            const qreal dist = _distanceMetric->distance(current->position(), searchPos);
             if (dist < bestDistSoFar)
             {
                 bestSoFar = current;
                 bestDistSoFar = dist;
-                //qDebug() << "Best unwound" << current->position() << bestDistSoFar;
             }
 
             //Do we need to check other side of hyperplane?
-            //QVectorND temp = position;
-            //temp[divDim] = current->position()[divDim];
-            //qDebug() << temp << "to" << current->position() << _distanceMetric->distance(current->position(), temp);
-            const qreal hyperplaneDistance = position.val(divDim) - current->position().val(divDim);
+            QVectorND temp = current->position();
+            temp[divDim] = searchPos.val(divDim);
+            const qreal hyperplaneDistance = this->distanceMetric()->distance(temp, current->position());
             if (hyperplaneDistance*hyperplaneDistance > bestDistSoFar)
                 continue;
 
-            if (position.val(divDim) <= current->position().val(divDim)
+            //Search the other side of the dividing node
+            if (searchPos.val(divDim) <= current->position().val(divDim)
                     && current->right() != 0)
                 descend.enqueue(current->right());
             else if (current->left() != 0)
@@ -247,6 +243,37 @@ bool QKDTree::nearest(QKDTreeNode *node, QKDTreeNode *output, QString *resultOut
     }
 
     return this->nearest(node->position(), output, resultOut);
+}
+
+bool QKDTree::contains(const QVectorND &position)
+{
+    if (position.dimension() != this->dimension())
+        return false;
+    else if (_size <= 0)
+        return false;
+
+    QKDTreeNode * current = _root;
+
+    while (current != 0)
+    {
+        if (current->position() == position)
+            return true;
+
+        const int divDim = current->dividingDimension();
+        if (position.val(divDim) <= current->position().val(divDim))
+            current = current->left();
+        else
+            current = current->right();
+    }
+    return false;
+}
+
+bool QKDTree::contains(QKDTreeNode *node)
+{
+    if (node == 0)
+        return false;
+
+    return this->contains(node->position());
 }
 
 bool QKDTree::setDistanceMetric(QKDTreeDistanceMetric *nMetric, QString *resultOut)

@@ -31,19 +31,42 @@ void QKDTreeTests::insertionTest()
 }
 
 //private test
+void QKDTreeTests::containsTest()
+{
+    QList<QVectorND> ref;
+
+    QKDTree tree(3);
+
+    for (int i = 0; i < 5000; i++)
+    {
+        QVectorND random = _randomNDimensional(3);
+
+        ref.append(random);
+        QVERIFY(tree.add(random,i));
+    }
+
+    for (int i = 0; i < 5000; i++)
+        QVERIFY(tree.contains(ref[qrand() % ref.size()]));
+
+    for (int i = 0; i < 5000; i++)
+    {
+        QVectorND random = _randomNDimensional(3);
+        QVERIFY(tree.contains(random) == ref.contains(random));
+    }
+}
+
+//private test
 void QKDTreeTests::bigNearestTest()
 {
     QList<QVectorND> backupList;
-    QKDTree tree(2);
+    QKDTree tree(4);
 
     for (int i = 0; i < 6000; i++)
     {
-        QVectorND pos(2);
-        pos[0] = qrand() % 100;
-        pos[1] = qrand() % 100;
+        QVectorND pos = _randomNDimensional(4);
 
         backupList.append(pos);
-        tree.add(pos, i);
+        QVERIFY(tree.add(pos, i));
     }
 
     QVERIFY(backupList.size() == tree.size());
@@ -51,15 +74,13 @@ void QKDTreeTests::bigNearestTest()
     bool wasError = false;
     for (int i = 0; i < 5000; i++)
     {
-        QVectorND pos(2);
-        pos[0] = qrand() % 100;
-        pos[1] = qrand() % 100;
+        QVectorND pos = _randomNDimensional(4);
 
         QKDTreeNode nearest;
         tree.nearest(pos, &nearest);
         qreal treeDistance = tree.distanceMetric()->distance(pos,nearest.position());
 
-        QVectorND backupNearest(2);
+        QVectorND backupNearest(4);
         qreal backupDist = 500000;
         foreach(const QVectorND& vec, backupList)
         {
@@ -93,18 +114,14 @@ void QKDTreeTests::benchmarkTreeAdd1()
     QKDTree tree(2);
     for (int i = 0; i < size1; i++)
     {
-        QVectorND pos(2);
-        pos[0] = qrand();
-        pos[1] = qrand();
+        QVectorND pos = _randomNDimensional(2);
 
         tree.add(pos, i);
     }
 
     QBENCHMARK
     {
-        QVectorND pos(2);
-        pos[0] = qrand();
-        pos[1] = qrand();
+        QVectorND pos = _randomNDimensional(2);
 
         tree.add(pos, "final");
     }
@@ -116,18 +133,14 @@ void QKDTreeTests::benchmarkTreeAdd2()
     QKDTree tree(2);
     for (int i = 0; i < size2; i++)
     {
-        QVectorND pos(2);
-        pos[0] = qrand();
-        pos[1] = qrand();
+        QVectorND pos = _randomNDimensional(2);
 
         tree.add(pos, i);
     }
 
     QBENCHMARK
     {
-        QVectorND pos(2);
-        pos[0] = qrand();
-        pos[1] = qrand();
+        QVectorND pos = _randomNDimensional(2);
 
         tree.add(pos, "final");
     }
@@ -141,18 +154,14 @@ void QKDTreeTests::benchmarkTreeNearest1()
 
     for (int i = 0; i < size1; i++)
     {
-        QVectorND pos(2);
-        pos[0] = qrand();
-        pos[1] = qrand();
+        QVectorND pos = _randomNDimensional(2);
 
         tree.add(pos, i);
     }
 
     for (int i = 0; i < 1; i++)
     {
-        QVectorND pos(2);
-        pos[0] = qrand();
-        pos[1] = qrand();
+        QVectorND pos = _randomNDimensional(2);
 
         QKDTreeNode nearestResult;
         QBENCHMARK
@@ -172,18 +181,14 @@ void QKDTreeTests::benchmarkTreeNearest2()
 
     for (int i = 0; i < size2; i++)
     {
-        QVectorND pos(2);
-        pos[0] = qrand();
-        pos[1] = qrand();
+        QVectorND pos = _randomNDimensional(2);
 
         tree.add(pos, i);
     }
 
     for (int i = 0; i < 1; i++)
     {
-        QVectorND pos(2);
-        pos[0] = qrand();
-        pos[1] = qrand();
+        QVectorND pos = _randomNDimensional(2);
 
         QKDTreeNode nearestResult;
         QBENCHMARK
@@ -202,17 +207,13 @@ void QKDTreeTests::benchmarkListAdd1()
 
     for (int i = 0; i < size1; i++)
     {
-        QVectorND pos(2);
-        pos[0] = qrand();
-        pos[1] = qrand();
+        QVectorND pos = _randomNDimensional(2);
         list.append(pos);
     }
 
     QBENCHMARK
     {
-        QVectorND pos(2);
-        pos[0] = qrand();
-        pos[1] = qrand();
+        QVectorND pos = _randomNDimensional(2);
         list.append(pos);
     }
 }
@@ -224,17 +225,13 @@ void QKDTreeTests::benchmarkListAdd2()
 
     for (int i = 0; i < size2; i++)
     {
-        QVectorND pos(2);
-        pos[0] = qrand();
-        pos[1] = qrand();
+        QVectorND pos = _randomNDimensional(2);
         list.append(pos);
     }
 
     QBENCHMARK
     {
-        QVectorND pos(2);
-        pos[0] = qrand();
-        pos[1] = qrand();
+        QVectorND pos = _randomNDimensional(2);
         list.append(pos);
     }
 }
@@ -247,17 +244,13 @@ void QKDTreeTests::benchmarkListNearest1()
 
     for (int i = 0; i < size1; i++)
     {
-        QVectorND pos(2);
-        pos[0] = qrand();
-        pos[1] = qrand();
+        QVectorND pos = _randomNDimensional(2);
         list.append(pos);
     }
 
     for (int i = 0; i < 1; i++)
     {
-        QVectorND pos(2);
-        pos[0] = qrand();
-        pos[1] = qrand();
+        QVectorND pos = _randomNDimensional(2);
 
         QVectorND best(1);
         QBENCHMARK
@@ -285,17 +278,13 @@ void QKDTreeTests::benchmarkListNearest2()
 
     for (int i = 0; i < size2; i++)
     {
-        QVectorND pos(2);
-        pos[0] = qrand();
-        pos[1] = qrand();
+        QVectorND pos = _randomNDimensional(2);
         list.append(pos);
     }
 
     for (int i = 0; i < 1; i++)
     {
-        QVectorND pos(2);
-        pos[0] = qrand();
-        pos[1] = qrand();
+        QVectorND pos = _randomNDimensional(2);
 
         QVectorND best(1);
         QBENCHMARK
@@ -313,4 +302,15 @@ void QKDTreeTests::benchmarkListNearest2()
         }
         results.append(best);
     }
+}
+
+//private static
+QVectorND QKDTreeTests::_randomNDimensional(int n)
+{
+    QVectorND toRet(n);
+
+    for (int i = 0; i < n; i++)
+        toRet[i] = qrand();
+
+    return toRet;
 }

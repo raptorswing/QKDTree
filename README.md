@@ -3,7 +3,7 @@ QKDTree
 
 A ghetto C++/Qt based kd-tree implemented iteratively (i.e. with no recursion.) and with fancy unit tests. I created this tree because I needed a quick way to do nearest neighbor searches.
 
-The tree supports storing key/value pairs where the key is a k-dimensional position and the value is anything you can cram into a QVariant.
+The kdtree supports storing key/value pairs where the key is a k-dimensional position and the value is anything you can cram into a QVariant.
 
 Features:
 * Inserting key/value pairs. O(logn) time.

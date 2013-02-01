@@ -15,7 +15,8 @@ public:
 
 private Q_SLOTS:
     void insertionTest();
-    void containsTest();
+    void containsKeyTest();
+    void valueTest();
     void bigNearestTest();
     void nearestPosByPosTest();
 

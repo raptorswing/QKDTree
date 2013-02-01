@@ -4,8 +4,8 @@
 
 #include <limits>
 
-const uint size1 = 16000;
-const uint size2 = 32000;
+const uint size1 = 32000;
+const uint size2 = 64000;
 
 QKDTreeTests::QKDTreeTests()
 {
@@ -24,14 +24,14 @@ void QKDTreeTests::insertionTest()
     tree.add(QPointF(-1,4), 4);
 
     QKDTreeNode nearest;
-    tree.nearest(QPointF(-1,5), &nearest);
+    tree.nearestNode(QPointF(-1,5), &nearest);
     QVERIFY(nearest.position() == QVectorND(QPoint(-1,5)));
 
     //tree.debugPrint();
 }
 
 //private test
-void QKDTreeTests::containsTest()
+void QKDTreeTests::containsKeyTest()
 {
     QList<QVectorND> ref;
 
@@ -46,13 +46,51 @@ void QKDTreeTests::containsTest()
     }
 
     for (int i = 0; i < 5000; i++)
-        QVERIFY(tree.contains(ref[qrand() % ref.size()]));
+        QVERIFY(tree.containsKey(ref[qrand() % ref.size()]));
 
     for (int i = 0; i < 5000; i++)
     {
         QVectorND random = _randomNDimensional(3);
-        QVERIFY(tree.contains(random) == ref.contains(random));
+        QVERIFY(tree.containsKey(random) == ref.contains(random));
     }
+}
+
+//private test
+void QKDTreeTests::valueTest()
+{
+    QKDTree tree(2);
+
+    tree.add(QPointF(0,0), 1);
+    tree.add(QPointF(-1,1), 2);
+    tree.add(QPointF(1,-1), 3);
+    tree.add(QPointF(-2,2), 4);
+    tree.add(QPointF(2,-2), 5);
+    tree.add(QPointF(-3,3), 6);
+    tree.add(QPointF(3,-3), 7);
+
+    QVariant val;
+    QVERIFY(tree.value(QPointF(0,0), &val));
+    QVERIFY(val == 1);
+
+    QVERIFY(tree.value(QPointF(-1,1), &val));
+    QVERIFY(val == 2);
+
+    QVERIFY(tree.value(QPointF(1,-1), &val));
+    QVERIFY(val == 3);
+
+    QVERIFY(tree.value(QPointF(-2,2), &val));
+    QVERIFY(val == 4);
+
+    QVERIFY(tree.value(QPointF(2,-2), &val));
+    QVERIFY(val == 5);
+
+    QVERIFY(tree.value(QPointF(-3,3), &val));
+    QVERIFY(val == 6);
+
+    QVERIFY(tree.value(QPointF(3,-3), &val));
+    QVERIFY(val == 7);
+
+    QVERIFY(!tree.value(QPointF(50,50), &val));
 }
 
 //private test
@@ -79,7 +117,7 @@ void QKDTreeTests::bigNearestTest()
         QVectorND pos = _randomNDimensional(dim);
 
         QKDTreeNode nearest;
-        tree.nearest(pos, &nearest);
+        tree.nearestNode(pos, &nearest);
         qreal treeDistance = tree.distanceMetric()->distance(pos,nearest.position());
 
         QVectorND backupNearest(dim);
@@ -127,7 +165,7 @@ void QKDTreeTests::nearestPosByPosTest()
         const QVectorND searchPoint = _randomNDimensional(dim);
 
         QVectorND nearestByTree(dim);
-        QVERIFY(tree.nearest(searchPoint, &nearestByTree));
+        QVERIFY(tree.nearestKey(searchPoint, &nearestByTree));
         const qreal treeDist = tree.distanceMetric()->distance(nearestByTree, searchPoint);
 
         QVectorND nearestByList(dim);
@@ -211,7 +249,7 @@ void QKDTreeTests::benchmarkTreeNearest1()
         QKDTreeNode nearestResult;
         QBENCHMARK
         {
-            tree.nearest(pos, &nearestResult);
+            tree.nearestNode(pos, &nearestResult);
         }
 
         results.append(nearestResult.position());
@@ -238,7 +276,7 @@ void QKDTreeTests::benchmarkTreeNearest2()
         QKDTreeNode nearestResult;
         QBENCHMARK
         {
-            tree.nearest(pos, &nearestResult);
+            tree.nearestNode(pos, &nearestResult);
         }
 
         results.append(nearestResult.position());
